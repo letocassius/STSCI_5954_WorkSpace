@@ -11,8 +11,7 @@ number-sections: true
 
 ## Domain problem formulation
 
-Our Goal is to figure out exactly where Eastern Bluebirds live across the eastern U.S. and southern Canada. Basically, we want to create a reliable map that predicts the places they're most likely to pop up.
-
+The original goal of this project was to explore which environmental factors are related to where Eastern Bluebirds are found. By comparing locations where the birds were present or absent, we aimed to identify habitat characteristics that might influence sightings and decide which variables are useful for building a future prediction model. This early analysis helps us understand the data, spot irrelevant or uninformative features, and guide the next steps of the project. 
 ## Step 1: Review background information
 
 ### Information on data collection 
