@@ -19,9 +19,20 @@ We aim to build a robust workflow that predicts Eastern Bluebird occurrences acr
 
 The source file is distributed as `EasternBluebird.csv`, a comma-separated export from an unknown system. No formal documentation accompanied the file. Key open questions:
 
-- Who produced the CSV export and at what stage of processing (raw observations, processed grids, etc.)?
-- Do the land cover percentages represent a single year, a multi-year average, or multiple concentric buffers stacked together (totals sometimes exceed 100%)?
-- Are repeated latitude/longitude pairs distinct surveys through time or different subsamples of the same remote-sensing grid?
+## **Determine where Eastern Bluebirds occur and are most abundant**
+
+* Found in the **eastern United States** (from **Canada** to **Mexico/Central America**)
+
+---
+
+## **Identify environmental features and landscape types associated with their presence**
+
+* Proximity to water sources?
+* Certain tree types?
+
+---
+
+## **Support regional and local conservation strategies**
 
 ### Data dictionary
 
@@ -118,7 +129,7 @@ head(bluebird_data, 5)
 
 ## Step 3: Examine the data
 
-We inspect the loaded data frame to confirm that values sit within expected ranges and to flag any issues that may require cleaning.
+This section follows a basic checklist: look for invalid values, study missingness, confirm the table is tidy, review column names and types, and run a dataset-specific sanity check.
 
 ### Invalid values
 
@@ -139,11 +150,17 @@ Coordinates fall within the eastern United States and southern Canada, and eleva
 ### Missing values
 
 ```{r}
-missing_counts <- colSums(is.na(bluebird_data))
-missing_counts[missing_counts > 0]
+missing_counts <- data.frame(
+  column = names(bluebird_data),
+  missing_count = colSums(is.na(bluebird_data))
+)
+missing_counts
+
+missing_rows <- bluebird_data[!complete.cases(bluebird_data), ]
+missing_rows
 ```
 
-No missing values are present, so downstream analyses can proceed without imputation.
+Missing values would be recorded as `NA`. Every column reports zero `NA`s and no incomplete rows appear, so downstream analyses can proceed without imputation or special-case handling.
 
 ### Data format
 
@@ -163,7 +180,7 @@ duplicate_summary <- data.frame(
 duplicate_summary
 ```
 
-Repeated latitude/longitude footprints suggest the data contain multiple surveys per site. Any train/test split should keep replicated footprints together.
+Each row already represents one survey footprint (an observational unit), and columns hold single measurements. Repeated latitude/longitude pairs indicate multiple surveys at the same site, so any train/test split should keep those replicate rows together.
 
 ### Column names
 
