@@ -293,9 +293,3 @@ site_stats <- data.frame(
 )
 site_stats
 ```
-
-Next steps:
-
-- Confirm the interpretation of land cover totals that exceed 100 and determine whether they require re-normalization or stratified handling.
-- Decide on a final export format (CSV, parquet, or RDS) for both the observation-level and site-level tables once metadata questions are resolved.
-- Incorporate temporal information if it is available elsewhere so we can respect survey-years during modeling splits.
