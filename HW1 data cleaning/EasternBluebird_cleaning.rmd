@@ -11,19 +11,19 @@ number-sections: true
 
 ## Domain problem formulation
 
-We aim to build a robust workflow that predicts Eastern Bluebird occurrences across their range in the eastern United States and southern Canada. The predictors appear to come from gridded environmental products summarizing land cover composition and topography. There is no accompanying metadata, so part of the project involves confirming how these variables were constructed (e.g., spatial resolution, temporal coverage, buffer size). Understanding the provenance of each variable is essential before interpreting model results or making ecological claims.
+Our Goal is to figure out exactly where Eastern Bluebirds live across the eastern U.S. and southern Canada. Basically, we want to create a reliable map that predicts the places they're most likely to pop up.
+
+The Essential question asked
+
+* How Fine-Grained is the Map? What is the spatial resolution? (e.g., Does one square represent $30$ meters, $100$ meters, or more?)
+* When Was the Picture Taken? What is the temporal coverage? (e.g., Is the land cover from $2010$, $2020$, or an average over a decade?)
+* How Far Did They Look? What buffer size was used? (e.g., When measuring 'forest nearby,' did they look in a $50$-meter circle, a $500$-meter circle, or a different size?)
 
 ## Step 1: Review background information {#sec:bg-info}
 
 ### Information on data collection 
 
-`EasternBluebird.csv` ships with the STSCI 5954 course workspace (downloaded September 2024). Each record appears to summarize one land-cover footprint: latitude/longitude locate the grid cell, `ELEV` gives elevation, and the land-cover columns store percent cover for different habitat types. The response variable `y` marks whether Eastern Bluebirds were observed at that footprint.
-
-No official metadata or collection notes were provided. For now we assume the values come from a remote-sensing product paired with presence/absence labels, but we still need confirmation on several points:
-
-- Who prepared the CSV and which upstream system generated the land-cover percentages?
-- Over what years (or aggregation window) were land-cover values calculated?
-- Do repeated latitude/longitude pairs represent repeated visits, temporal replicates, or overlapping buffers?
+`EasternBluebird.csv` summarize one land-cover footprint: latitude/longitude locate the grid cell, `ELEV` gives elevation, and the land-cover columns store percent cover for different habitat types. The response variable `y` marks whether Eastern Bluebirds were observed at that footprint.
 
 When authoritative documentation becomes available, we should save a copy (PDF or local archive) and update this section with a stable link.
 
