@@ -27,222 +27,177 @@ The source file is distributed as `EasternBluebird.csv`, a comma-separated expor
 
 Column descriptions below are inferred from header names and exploratory analysis. They should be verified against official documentation when it becomes available.
 
-```{r data-dictionary}
-#| label: data-dictionary
-#| message: false
-#| warning: false
+```{r}
+data_dictionary <- data.frame(
+  column = c(
+    "LATITUDE", "LONGITUDE", "ELEV", "Shallow_Ocean", "CoastShore_lines",
+    "Shallow_Inland", "Deep_Inland", "Moderate_Ocean", "Deep_Ocean",
+    "Evergreen_needle", "Grasslands", "Croplands", "Urban_Built", "Barren",
+    "Evergreen_broad", "Deciduous_needle", "Deciduous_broad", "Mixed_forest",
+    "Closed_shrubland", "Open_shrubland", "Woody_savannas", "Savannas", "y"
+  ),
+  description = c(
+    "Latitude of the sampling footprint in decimal degrees (WGS84).",
+    "Longitude of the sampling footprint in decimal degrees (WGS84, negative for West).",
+    "Elevation of the footprint in meters above sea level (negative values indicate locations below sea level).",
+    "Percent of the footprint classified as shallow ocean water.",
+    "Percent of the footprint flagged as coastal shoreline interface.",
+    "Percent of the footprint covered by shallow inland water bodies.",
+    "Percent of the footprint covered by deep inland water bodies.",
+    "Percent of the footprint in moderate-depth ocean water.",
+    "Percent of the footprint in deep ocean water.",
+    "Percent evergreen needleleaf forest cover.",
+    "Percent grassland cover.",
+    "Percent cropland or agricultural cover.",
+    "Percent urban or built-up land cover.",
+    "Percent barren land (bare soil/rock).",
+    "Percent evergreen broadleaf forest cover.",
+    "Percent deciduous needleleaf forest cover.",
+    "Percent deciduous broadleaf forest cover.",
+    "Percent mixed forest cover.",
+    "Percent closed shrubland cover.",
+    "Percent open shrubland cover.",
+    "Percent woody savanna cover.",
+    "Percent savanna cover.",
+    "Binary indicator of Eastern Bluebird presence (1) or absence (0) for this footprint."
+  ),
+  stringsAsFactors = FALSE
+)
 
-tibble::tribble(
-  ~column, ~description,
-  "LATITUDE", "Latitude of the sampling footprint in decimal degrees (WGS84).",
-  "LONGITUDE", "Longitude of the sampling footprint in decimal degrees (WGS84, negative for West).",
-  "ELEV", "Elevation of the footprint in meters above sea level (negative values indicate locations below sea level).",
-  "Shallow_Ocean", "Percent of the footprint classified as shallow ocean water.",
-  "CoastShore_lines", "Percent of the footprint flagged as coastal shoreline interface.",
-  "Shallow_Inland", "Percent of the footprint covered by shallow inland water bodies.",
-  "Deep_Inland", "Percent of the footprint covered by deep inland water bodies.",
-  "Moderate_Ocean", "Percent of the footprint in moderate-depth ocean water.",
-  "Deep_Ocean", "Percent of the footprint in deep ocean water.",
-  "Evergreen_needle", "Percent evergreen needleleaf forest cover.",
-  "Grasslands", "Percent grassland cover.",
-  "Croplands", "Percent cropland or agricultural cover.",
-  "Urban_Built", "Percent urban or built-up land cover.",
-  "Barren", "Percent barren land (bare soil/rock).",
-  "Evergreen_broad", "Percent evergreen broadleaf forest cover.",
-  "Deciduous_needle", "Percent deciduous needleleaf forest cover.",
-  "Deciduous_broad", "Percent deciduous broadleaf forest cover.",
-  "Mixed_forest", "Percent mixed forest cover.",
-  "Closed_shrubland", "Percent closed shrubland cover.",
-  "Open_shrubland", "Percent open shrubland cover.",
-  "Woody_savannas", "Percent woody savanna cover.",
-  "Savannas", "Percent savanna cover.",
-  "y", "Binary indicator of Eastern Bluebird presence (1) or absence (0) for this footprint."
-) |>
-  knitr::kable()
+knitr::kable(data_dictionary)
 ```
 
 ## Step 2: Load the data
 
-We ingest the CSV directly with `readr::read_csv` and standardize column names for downstream wrangling.
+We load the CSV with base R's `read.csv` and convert key columns to numeric so later steps are straightforward.
 
-```{r setup}
-#| label: setup
-#| message: false
-#| warning: false
-
-library(tidyverse)
-library(janitor)
+```{r}
+options(stringsAsFactors = FALSE)
 ```
 
-```{r data-path}
-#| label: data-path
-#| message: false
-#| warning: false
-
+```{r}
 data_path <- "EasternBluebird.csv"
-
 file_details <- file.info(data_path)
-tibble(
+file_overview <- data.frame(
   file_size_mb = round(file_details$size / 1024^2, 2),
   last_modified = file_details$mtime
 )
+file_overview
 ```
 
-```{r ingest}
-#| label: ingest
-#| message: false
-#| warning: false
-
-ingest_eastern_bluebird <- function(path) {
-  readr::read_csv(path, show_col_types = FALSE)
-}
-
-bluebird_raw <- ingest_eastern_bluebird(data_path)
-bluebird_raw |> glimpse()
+```{r}
+bluebird_raw <- read.csv(data_path, stringsAsFactors = FALSE)
+str(bluebird_raw)
 ```
 
-```{r initial-clean}
-#| label: initial-clean
-#| message: false
-#| warning: false
+```{r}
+bluebird_data <- bluebird_raw
+bluebird_data$LATITUDE <- as.numeric(bluebird_data$LATITUDE)
+bluebird_data$LONGITUDE <- as.numeric(bluebird_data$LONGITUDE)
 
 landcover_cols <- c(
-  "shallow_ocean", "coast_shore_lines", "shallow_inland", "deep_inland",
-  "moderate_ocean", "deep_ocean", "evergreen_needle", "grasslands", "croplands",
-  "urban_built", "barren", "evergreen_broad", "deciduous_needle",
-  "deciduous_broad", "mixed_forest", "closed_shrubland", "open_shrubland",
-  "woody_savannas", "savannas"
+  "Shallow_Ocean", "CoastShore_lines", "Shallow_Inland", "Deep_Inland",
+  "Moderate_Ocean", "Deep_Ocean", "Evergreen_needle", "Grasslands", "Croplands",
+  "Urban_Built", "Barren", "Evergreen_broad", "Deciduous_needle",
+  "Deciduous_broad", "Mixed_forest", "Closed_shrubland", "Open_shrubland",
+  "Woody_savannas", "Savannas"
 )
 
-bluebird_ingested <- bluebird_raw |>
-  janitor::clean_names() |>
-  mutate(
-    latitude = as.numeric(latitude),
-    longitude = as.numeric(longitude),
-    landcover_total = rowSums(across(all_of(landcover_cols))),
-    landcover_total_over_100 = landcover_total > 100 + 1e-6
-  )
+bluebird_data$landcover_total <- rowSums(bluebird_data[, landcover_cols], na.rm = TRUE)
+bluebird_data$landcover_total_over_100 <- bluebird_data$landcover_total > (100 + 1e-6)
 
-tibble(
-  rows = nrow(bluebird_ingested),
-  columns = ncol(bluebird_ingested)
+data.frame(
+  rows = nrow(bluebird_data),
+  columns = ncol(bluebird_data)
 )
 ```
 
-```{r preview}
-#| label: preview
-#| message: false
-#| warning: false
-
-bluebird_ingested |>
-  slice_head(n = 5)
+```{r}
+head(bluebird_data, 5)
 ```
 
 ## Step 3: Examine the data
 
-We inspect the loaded tibble to confirm that values sit within expected ranges and to flag any issues that may require cleaning.
+We inspect the loaded data frame to confirm that values sit within expected ranges and to flag any issues that may require cleaning.
 
 ### Invalid values
 
-```{r range-summary}
-#| label: range-summary
-#| message: false
-#| warning: false
-
-bluebird_ingested |>
-  summarise(
-    lat_min = min(latitude),
-    lat_max = max(latitude),
-    lon_min = min(longitude),
-    lon_max = max(longitude),
-    elev_min = min(elev),
-    elev_max = max(elev)
-  )
+```{r}
+range_summary <- data.frame(
+  lat_min = min(bluebird_data$LATITUDE, na.rm = TRUE),
+  lat_max = max(bluebird_data$LATITUDE, na.rm = TRUE),
+  lon_min = min(bluebird_data$LONGITUDE, na.rm = TRUE),
+  lon_max = max(bluebird_data$LONGITUDE, na.rm = TRUE),
+  elev_min = min(bluebird_data$ELEV, na.rm = TRUE),
+  elev_max = max(bluebird_data$ELEV, na.rm = TRUE)
+)
+range_summary
 ```
 
 Coordinates fall within the eastern United States and southern Canada, and elevations remain plausible for terrestrial sites.
 
 ### Missing values
 
-```{r missing-values}
-#| label: missing-values
-#| message: false
-#| warning: false
-
-bluebird_ingested |>
-  summarise(across(everything(), ~ sum(is.na(.)))) |>
-  tidyr::pivot_longer(everything(), names_to = "column", values_to = "missing_count") |>
-  filter(missing_count > 0)
+```{r}
+missing_counts <- colSums(is.na(bluebird_data))
+missing_counts[missing_counts > 0]
 ```
 
 No missing values are present, so downstream analyses can proceed without imputation.
 
 ### Data format
 
-```{r duplicates}
-#| label: duplicates
-#| message: false
-#| warning: false
-
-duplicate_summary <- bluebird_ingested |>
-  count(latitude, longitude, name = "n_records") |>
-  arrange(desc(n_records))
-
-duplicate_summary |>
-  summarise(
-    total_sites = n(),
-    max_records = max(n_records),
-    sites_with_duplicates = sum(n_records > 1),
-    pct_sites_with_duplicates = scales::percent(sites_with_duplicates / total_sites)
-  )
+```{r}
+site_keys <- paste(bluebird_data$LATITUDE, bluebird_data$LONGITUDE)
+site_table <- table(site_keys)
+total_sites <- length(site_table)
+max_records <- max(site_table)
+sites_with_duplicates <- sum(site_table > 1)
+pct_sites_with_duplicates <- round((sites_with_duplicates / total_sites) * 100, 2)
+duplicate_summary <- data.frame(
+  total_sites = total_sites,
+  max_records = max_records,
+  sites_with_duplicates = sites_with_duplicates,
+  pct_sites_with_duplicates = paste0(pct_sites_with_duplicates, "%")
+)
+duplicate_summary
 ```
 
 Repeated latitude/longitude footprints suggest the data contain multiple surveys per site. Any train/test split should keep replicated footprints together.
 
 ### Column names
 
-```{r column-names}
-#| label: column-names
-#| message: false
-#| warning: false
-
-tibble(column = names(bluebird_ingested))
+```{r}
+data.frame(column = names(bluebird_data))
 ```
 
-`janitor::clean_names()` already produces snake_case headers that are consistent across the dataset.
+Column names already use underscores, so we keep them as provided.
 
 ### Variable type
 
-```{r variable-types}
-#| label: variable-types
-#| message: false
-#| warning: false
-
-tibble(
-  column = names(bluebird_ingested),
-  class = purrr::map_chr(bluebird_ingested, ~ paste(class(.x), collapse = ", "))
+```{r}
+variable_types <- data.frame(
+  column = names(bluebird_data),
+  class = sapply(bluebird_data, function(x) paste(class(x), collapse = ", "))
 )
+variable_types
 ```
 
 Predictors are numeric, and the response `y` remains coded as 0/1. If factor semantics are required, the conversion can occur closer to modeling.
 
 ### Data specific explorations
 
-```{r landcover-totals}
-#| label: landcover-totals
-#| message: false
-#| warning: false
-
-bluebird_ingested |>
-  summarise(
-    min_total = min(landcover_total),
-    p10_total = quantile(landcover_total, 0.10),
-    median_total = median(landcover_total),
-    mean_total = mean(landcover_total),
-    p90_total = quantile(landcover_total, 0.90),
-    max_total = max(landcover_total),
-    pct_over_100 = scales::percent(mean(landcover_total_over_100))
-  )
+```{r}
+landcover_stats <- data.frame(
+  min_total = min(bluebird_data$landcover_total, na.rm = TRUE),
+  p10_total = as.numeric(quantile(bluebird_data$landcover_total, 0.10, na.rm = TRUE)),
+  median_total = median(bluebird_data$landcover_total, na.rm = TRUE),
+  mean_total = mean(bluebird_data$landcover_total, na.rm = TRUE),
+  p90_total = as.numeric(quantile(bluebird_data$landcover_total, 0.90, na.rm = TRUE)),
+  max_total = max(bluebird_data$landcover_total, na.rm = TRUE),
+  pct_over_100 = paste0(round(mean(bluebird_data$landcover_total_over_100, na.rm = TRUE) * 100, 2), "%")
+)
+landcover_stats
 ```
 
 Land cover totals cluster around 100 but occasionally exceed it, reinforcing the need to confirm whether overlapping buffers or stacked categories generated the export.
@@ -251,98 +206,76 @@ Land cover totals cluster around 100 but occasionally exceed it, reinforcing the
 
 The cleaning workflow below:
 
-1. Ingests the CSV and standardizes column names.
+1. Copies the raw table and stores latitude/longitude as numeric values.
 2. Computes land cover totals and flags rows where totals exceed 100.
-3. Adds normalized land cover fractions so that each record sums to one regardless of the original scale.
-4. Aggregates to a site-level table (one row per latitude/longitude) with counts of replicate observations and the mean/any presence outcomes. This reduces leakage when splitting data by location.
+3. Adds normalized land cover fractions so each record sums to one even if the original totals differ.
+4. Aggregates to a site-level table (one row per latitude/longitude) with counts of replicate observations and simple presence summaries. This reduces leakage when splitting data by location.
 
-```{r cleaning-function}
-#| label: cleaning-function
-#| message: false
-#| warning: false
+```{r}
+bluebird_simple <- bluebird_data
 
-clean_eastern_bluebird <- function(path) {
-  raw <- ingest_eastern_bluebird(path)
-  cleaned <- raw |>
-    janitor::clean_names() |>
-    mutate(
-      latitude = as.numeric(latitude),
-      longitude = as.numeric(longitude),
-      landcover_total = rowSums(across(all_of(landcover_cols))),
-      landcover_total_over_100 = landcover_total > 100 + 1e-6
-    ) |>
-    mutate(
-      across(
-        all_of(landcover_cols),
-        ~ if_else(landcover_total == 0, 0, .x / landcover_total),
-        .names = "{.col}_frac"
-      )
-    )
-
-  site_level <- cleaned |>
-    group_by(latitude, longitude) |>
-    summarise(
-      n_observations = n(),
-      presence_any = as.integer(any(y == 1)),
-      presence_rate = mean(y),
-      elev_mean = mean(elev),
-      across(all_of(landcover_cols), mean, .names = "{.col}_mean"),
-      across(ends_with("_frac"), mean),
-      landcover_total_mean = mean(landcover_total),
-      .groups = "drop"
-    )
-
-  list(
-    raw = raw,
-    cleaned = cleaned,
-    site_level = site_level
+for (col in landcover_cols) {
+  new_name <- paste0(col, "_frac")
+  bluebird_simple[[new_name]] <- ifelse(
+    bluebird_simple$landcover_total == 0,
+    0,
+    bluebird_simple[[col]] / bluebird_simple$landcover_total
   )
 }
 
-bluebird_outputs <- clean_eastern_bluebird(data_path)
+site_counts <- aggregate(y ~ LATITUDE + LONGITUDE, data = bluebird_simple, length)
+names(site_counts)[3] <- "n_observations"
 
-bluebird_outputs$site_level |>
-  summarise(
-    sites = n(),
-    mean_records_per_site = mean(n_observations),
-    max_records_per_site = max(n_observations)
-  )
+presence_any <- aggregate(y ~ LATITUDE + LONGITUDE, data = bluebird_simple, function(x) as.integer(any(x == 1)))
+names(presence_any)[3] <- "presence_any"
+
+presence_rate <- aggregate(y ~ LATITUDE + LONGITUDE, data = bluebird_simple, mean)
+names(presence_rate)[3] <- "presence_rate"
+
+elev_mean <- aggregate(ELEV ~ LATITUDE + LONGITUDE, data = bluebird_simple, mean)
+names(elev_mean)[3] <- "elev_mean"
+
+landcover_total_mean <- aggregate(landcover_total ~ LATITUDE + LONGITUDE, data = bluebird_simple, mean)
+names(landcover_total_mean)[3] <- "landcover_total_mean"
+
+site_level <- merge(site_counts, presence_any, by = c("LATITUDE", "LONGITUDE"))
+site_level <- merge(site_level, presence_rate, by = c("LATITUDE", "LONGITUDE"))
+site_level <- merge(site_level, elev_mean, by = c("LATITUDE", "LONGITUDE"))
+site_level <- merge(site_level, landcover_total_mean, by = c("LATITUDE", "LONGITUDE"))
+
+bluebird_clean_list <- list(
+  cleaned = bluebird_simple,
+  site_level = site_level
+)
+
+site_overview <- data.frame(
+  sites = nrow(site_level),
+  mean_records_per_site = mean(site_level$n_observations),
+  max_records_per_site = max(site_level$n_observations)
+)
+site_overview
 ```
 
-```{r cleaned-preview}
-#| label: cleaned-preview
-#| message: false
-#| warning: false
-
-bluebird_outputs$cleaned |>
-  select(
-    latitude, longitude, elev, landcover_total,
-    landcover_total_over_100, woody_savannas, woody_savannas_frac, y
-  ) |>
-  slice_head(n = 5)
+```{r}
+columns_to_show <- c(
+  "LATITUDE", "LONGITUDE", "ELEV", "landcover_total",
+  "landcover_total_over_100", "Woody_savannas", "Woody_savannas_frac", "y"
+)
+head(bluebird_clean_list$cleaned[, columns_to_show], 5)
 ```
 
-```{r site-preview}
-#| label: site-preview
-#| message: false
-#| warning: false
-
-bluebird_outputs$site_level |>
-  slice_head(n = 5)
+```{r}
+head(bluebird_clean_list$site_level, 5)
 ```
 
-```{r site-target-summary}
-#| label: site-target-summary
-#| message: false
-#| warning: false
-
-bluebird_outputs$site_level |>
-  summarise(
-    min_rate = min(presence_rate),
-    mean_rate = mean(presence_rate),
-    median_rate = median(presence_rate),
-    max_rate = max(presence_rate)
-  )
+```{r}
+site_stats <- data.frame(
+  min_rate = min(bluebird_clean_list$site_level$presence_rate, na.rm = TRUE),
+  mean_rate = mean(bluebird_clean_list$site_level$presence_rate, na.rm = TRUE),
+  median_rate = median(bluebird_clean_list$site_level$presence_rate, na.rm = TRUE),
+  max_rate = max(bluebird_clean_list$site_level$presence_rate, na.rm = TRUE)
+)
+site_stats
 ```
 
 Next steps:
