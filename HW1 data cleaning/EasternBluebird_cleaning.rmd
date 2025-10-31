@@ -17,26 +17,25 @@ We aim to build a robust workflow that predicts Eastern Bluebird occurrences acr
 
 ### Information on data collection 
 
-The source file is distributed as `EasternBluebird.csv`, a comma-separated export from an unknown system. No formal documentation accompanied the file. Key open questions:
+`EasternBluebird.csv` ships with the STSCI 5954 course workspace (downloaded September 2024). Each record appears to summarize one land-cover footprint: latitude/longitude locate the grid cell, `ELEV` gives elevation, and the land-cover columns store percent cover for different habitat types. The response variable `y` marks whether Eastern Bluebirds were observed at that footprint.
 
-## **Determine where Eastern Bluebirds occur and are most abundant**
+No official metadata or collection notes were provided. For now we assume the values come from a remote-sensing product paired with presence/absence labels, but we still need confirmation on several points:
 
-* Found in the **eastern United States** (from **Canada** to **Mexico/Central America**)
+- Who prepared the CSV and which upstream system generated the land-cover percentages?
+- Over what years (or aggregation window) were land-cover values calculated?
+- Do repeated latitude/longitude pairs represent repeated visits, temporal replicates, or overlapping buffers?
 
----
+When authoritative documentation becomes available, we should save a copy (PDF or local archive) and update this section with a stable link.
 
-## **Identify environmental features and landscape types associated with their presence**
+While we work with the interim understanding above, our cleaning objectives are:
 
-* Proximity to water sources?
-* Certain tree types?
-
----
-
-## **Support regional and local conservation strategies**
+- Determine where Eastern Bluebirds occur and are most abundant across the eastern United States (Canada to Mexico/Central America).
+- Identify environmental features most associated with presence (for example, proximity to water or particular tree types).
+- Summarize site-level information that can support regional and local conservation planning.
 
 ### Data dictionary
 
-Column descriptions below are inferred from header names and exploratory analysis. They should be verified against official documentation when it becomes available.
+The table below captures the field descriptions we currently infer from the headers. Treat these notes as provisional until we can compare them with official metadata; once an authoritative source is found, store the link (or a saved PDF) alongside this project.
 
 ```{r}
 data_dictionary <- data.frame(
