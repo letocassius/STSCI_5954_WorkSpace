@@ -13,13 +13,7 @@ number-sections: true
 
 Our Goal is to figure out exactly where Eastern Bluebirds live across the eastern U.S. and southern Canada. Basically, we want to create a reliable map that predicts the places they're most likely to pop up.
 
-The Essential question asked
-
-* How Fine-Grained is the Map? What is the spatial resolution? (e.g., Does one square represent $30$ meters, $100$ meters, or more?)
-* When Was the Picture Taken? What is the temporal coverage? (e.g., Is the land cover from $2010$, $2020$, or an average over a decade?)
-* How Far Did They Look? What buffer size was used? (e.g., When measuring 'forest nearby,' did they look in a $50$-meter circle, a $500$-meter circle, or a different size?)
-
-## Step 1: Review background information {#sec:bg-info}
+## Step 1: Review background information
 
 ### Information on data collection 
 
